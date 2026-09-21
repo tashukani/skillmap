@@ -170,44 +170,6 @@
     letter-spacing: .01em;
   }
 
-  .adder {
-    background: var(--group);
-    border-radius: 10px;
-    padding: 16px;
-    display: grid;
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
-    gap: 8px;
-    align-items: center;
-  }
-  .adder input {
-    font-family: var(--body);
-    font-size: 13px;
-    padding: 9px 11px;
-    border: 1px solid var(--tile-line);
-    border-radius: 8px;
-    background: var(--tile);
-    color: var(--ink);
-    min-width: 0;
-  }
-  .adder input::placeholder { color: var(--ink-soft); }
-  .adder input:focus-visible { outline: 2px solid var(--ink); outline-offset: -1px; border-color: var(--ink); }
-  .adder button {
-    font-family: var(--body);
-    font-size: 13px;
-    font-weight: 500;
-    padding: 9px 18px;
-    border: 1px solid var(--ink);
-    border-radius: 8px;
-    background: var(--ink);
-    color: #FFFFFF;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .adder button:hover { opacity: .88; }
-  .adder button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-
-  .msg { font-size: 11.5px; color: var(--ink-mid); margin-top: 8px; min-height: 1.7em; }
-
   .articles { margin-top: 16px; display: grid; gap: 8px; }
   .article {
     display: grid;
@@ -239,18 +201,6 @@
     overflow-wrap: anywhere;
   }
   .article .go { font-size: 12px; color: var(--ink-soft); }
-  .row { display: flex; align-items: center; gap: 6px; }
-  .del {
-    font-family: var(--body);
-    font-size: 11px;
-    border: 1px solid var(--tile-line);
-    background: var(--tile);
-    color: var(--ink-soft);
-    border-radius: 6px;
-    padding: 3px 8px;
-    cursor: pointer;
-  }
-  .del:hover { border-color: var(--ink-mid); color: var(--ink); }
   .empty {
     border: 1px dashed rgba(147, 147, 147, .45);
     border-radius: 10px;
@@ -277,9 +227,6 @@
     background: var(--group);
   }
 
-  @media (max-width: 560px) {
-    .adder { grid-template-columns: minmax(0, 1fr); }
-  }
   @media (max-width: 480px) {
     .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
@@ -303,13 +250,6 @@
       <div class="crumb" id="crumb"></div>
       <h2 id="list-title"></h2>
     </div>
-
-    <form class="adder" id="adder">
-      <input id="url-input" type="url" placeholder="https://example.com/article" required>
-      <input id="title-input" type="text" placeholder="タイトル（省略可）">
-      <button type="submit">リンクを追加</button>
-    </form>
-    <div class="msg" id="msg"></div>
 
     <div class="articles" id="articles"></div>
   </section>
@@ -377,29 +317,32 @@
   var board = document.getElementById("board");
   var listView = document.getElementById("list");
   var articlesEl = document.getElementById("articles");
-  var msgEl = document.getElementById("msg");
   var foot = document.getElementById("foot");
 
-  /* ---------- store: shared db when available, this browser otherwise ---------- */
-  var db = null;
-  var unsubscribe = null;
-  var LOCAL_KEY = "skillmap.links.v1";
-
-  function localAll() {
-    try {
-      var raw = window.localStorage.getItem(LOCAL_KEY);
-      var parsed = raw ? JSON.parse(raw) : null;
-      return parsed && typeof parsed === "object" ? parsed : {};
-    } catch (e) { return {}; }
-  }
-  function localSave(all) {
-    try { window.localStorage.setItem(LOCAL_KEY, JSON.stringify(all)); } catch (e) { /* ignore */ }
-  }
-  function localList(skill) {
-    return (localAll()[skill] || []).slice().sort(function (a, b) { return b.createdAt - a.createdAt; });
-  }
-
-  function links(skill) { return db.collection("links").where("skill", "==", skill); }
+  /* ---------- links ----------
+     The article lists live in this file. To add one, put it at the TOP of its
+     skill's array (newest first) and commit:
+       hig: [{ url: "https://example.com/a", title: "記事タイトル" }]
+     Skill keys — UI: hig, da, trend, nav, ds /
+     UX: modeling, explore, hypo, domain, post, deep /
+     デジタルプロダクトデザイン: quant, translate, biz, impact */
+  var LINKS = {
+    hig: [],
+    da: [],
+    trend: [],
+    nav: [],
+    ds: [],
+    modeling: [],
+    explore: [],
+    hypo: [],
+    domain: [],
+    post: [],
+    deep: [],
+    quant: [],
+    translate: [],
+    biz: [],
+    impact: []
+  };
 
   /* ---------- board ---------- */
   function tileGrid(items) {
@@ -473,12 +416,11 @@
 
   function renderArticles(rows) {
     articlesEl.textContent = "";
-    setCount(openSkill, rows.length);
 
     if (!rows.length) {
       var empty = document.createElement("div");
       empty.className = "empty";
-      empty.textContent = "まだ記事がありません。上のフォームにURLを入れると、1件の記事として並びます。";
+      empty.textContent = "このスキルのリンクはまだ登録されていません。";
       articlesEl.appendChild(empty);
       return;
     }
@@ -500,80 +442,14 @@
       left.appendChild(t);
       left.appendChild(u);
 
-      var right = document.createElement("div");
-      right.className = "row";
       var go = document.createElement("span");
       go.className = "go";
       go.textContent = "開く ↗";
-      var del = document.createElement("button");
-      del.type = "button";
-      del.className = "del";
-      del.textContent = "削除";
-      del.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        removeLink(r.id);
-      });
-      right.appendChild(go);
-      right.appendChild(del);
 
       a.appendChild(left);
-      a.appendChild(right);
+      a.appendChild(go);
       articlesEl.appendChild(a);
     });
-  }
-
-  function loadArticles() {
-    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
-    var skill = openSkill;
-
-    if (db) {
-      unsubscribe = links(skill).onSnapshot(function (snap) {
-        var rows = snap.docs.map(function (d) {
-          var v = d.data() || {};
-          return { id: d.id, url: v.url, title: v.title, createdAt: v.createdAt || 0 };
-        }).sort(function (a, b) { return b.createdAt - a.createdAt; });
-        renderArticles(rows);
-      }, function () {
-        renderArticles(localList(skill));
-        msgEl.textContent = "共有の保存先に接続できないため、このブラウザにのみ保存します。";
-      });
-      return;
-    }
-    renderArticles(localList(skill));
-  }
-
-  function addLink(url, title) {
-    var row = { skill: openSkill, url: url, title: title, createdAt: Date.now() };
-    if (db) {
-      return db.collection("links").add(row).then(function () {
-        msgEl.textContent = "追加しました。";
-      }, function (e) {
-        msgEl.textContent = e && e.code === "invalid_argument"
-          ? "このページの編集権限がないため、追加できませんでした。"
-          : "追加できませんでした。少し待ってからもう一度お試しください。";
-      });
-    }
-    var all = localAll();
-    var arr = all[openSkill] || (all[openSkill] = []);
-    arr.push({ id: String(Date.now()) + Math.random().toString(36).slice(2, 7), url: url, title: title, createdAt: row.createdAt });
-    localSave(all);
-    renderArticles(localList(openSkill));
-    msgEl.textContent = "追加しました。";
-    return Promise.resolve();
-  }
-
-  function removeLink(id) {
-    if (db) {
-      db.collection("links").doc(id).delete().then(null, function () {
-        msgEl.textContent = "削除できませんでした。";
-      });
-      return;
-    }
-    var all = localAll();
-    all[openSkill] = (all[openSkill] || []).filter(function (r) { return r.id !== id; });
-    localSave(all);
-    renderArticles(localList(openSkill));
   }
 
   function openList(skill) {
@@ -581,18 +457,14 @@
     var it = ITEMS[skill];
     document.getElementById("crumb").textContent = it.area;
     document.getElementById("list-title").textContent = it.label;
-    msgEl.textContent = "";
-    document.getElementById("adder").reset();
-
     board.hidden = true;
     listView.hidden = false;
     foot.innerHTML = "記事をクリックするとリンクが新しいタブで開きます。<kbd>Esc</kbd> でスキルマップに戻ります。";
-    loadArticles();
-    document.getElementById("url-input").focus();
+    renderArticles(LINKS[skill] || []);
+    document.getElementById("back").focus();
   }
 
   function closeList() {
-    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
     openSkill = null;
     listView.hidden = true;
     board.hidden = false;
@@ -601,22 +473,6 @@
   }
 
   document.getElementById("back").addEventListener("click", closeList);
-
-  document.getElementById("adder").addEventListener("submit", function (e) {
-    e.preventDefault();
-    var urlEl = document.getElementById("url-input");
-    var titleEl = document.getElementById("title-input");
-    var url = urlEl.value.trim();
-    if (!url) return;
-    if (!/^https?:\/\//i.test(url)) {
-      msgEl.textContent = "URLは http:// または https:// から入力してください。";
-      return;
-    }
-    addLink(url, titleEl.value.trim());
-    urlEl.value = "";
-    titleEl.value = "";
-    urlEl.focus();
-  });
 
   /* ---------- keyboard ---------- */
   function focusTile(el) {
@@ -693,33 +549,10 @@
 
   markSelection();
 
-  /* ---------- counts on the board, and the shared store when it arrives ---------- */
-  function refreshCounts() {
-    if (db) {
-      db.collection("links").get().then(function (snap) {
-        var bySkill = {};
-        snap.docs.forEach(function (d) {
-          var v = d.data() || {};
-          if (v.skill) bySkill[v.skill] = (bySkill[v.skill] || 0) + 1;
-        });
-        Object.keys(ITEMS).forEach(function (id) { setCount(id, bySkill[id] || 0); });
-      }, function () { /* leave the counts as they are */ });
-      return;
-    }
-    var all = localAll();
-    Object.keys(ITEMS).forEach(function (id) { setCount(id, (all[id] || []).length); });
-  }
+  Object.keys(ITEMS).forEach(function (id) {
+    setCount(id, (LINKS[id] || []).length);
+  });
 
-  refreshCounts();
-
-  if (window.claude && typeof window.claude.use === "function") {
-    window.claude.use("db").then(function (ns) {
-      if (!ns) return;
-      db = ns;
-      refreshCounts();
-      if (openSkill) loadArticles();
-    }, function () { /* keep the local store */ });
-  }
 })();
 </script>
 </body>
