@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>スキルマップ三領域</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    color-scheme: light;
+    --ground: #FFFFFF;
+    --group: rgba(147, 147, 147, .12);
+    --tile: #FFFFFF;
+    --tile-line: #E4E6E8;
+    --line: #E7E8EA;
+    --ink: #24282C;
+    --ink-mid: #6B7278;
+    --ink-soft: #9AA0A6;
+    --tile-shadow: 0 1px 2px rgba(24,28,32,.07);
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+    --display: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+    --body: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #FFFFFF;
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 14px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 808px;
+    margin: 0 auto;
+    padding-inline: 24px;
+    padding-block: 24px 48px;
+  }
+
+  /* ---------- header ---------- */
+  .hd {
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hd h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 20px;
+    letter-spacing: .01em;
+    margin: 0;
+  }
+
+  /* ---------- board ---------- */
+  .board {
+    margin-top: 28px;
+  }
+  .group {
+    background: var(--group);
+    border-radius: 12px;
+    padding: 16px;
+    display: grid;
+    gap: 16px;
+  }
+  .group-hd h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0 0 3px;
+    letter-spacing: .01em;
+  }
+  .group-hd .desc { font-size: 11px; color: var(--ink-soft); line-height: 1.55; }
+
+  .subgroup {
+    /* same 12% grey as the parent panel — stacking it reads as the darker, inner layer */
+    background: var(--group);
+    border-radius: 10px;
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+  }
+  .sub-hd h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    margin: 0 0 2px;
+    letter-spacing: .01em;
+  }
+  .sub-hd .desc { font-size: 10.5px; color: var(--ink-soft); line-height: 1.5; }
+  .content {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+  }
+  /* the outermost level (デジタルプロダクトデザイン) sits a step wider */
+  .group > .content { padding: 16px 32px; }
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .tile {
+    position: relative;
+    background: var(--tile);
+    border: 1px solid var(--tile-line);
+    border-radius: 9px;
+    box-shadow: var(--tile-shadow);
+    min-height: 62px;
+    padding: 11px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    text-align: center;
+    font: inherit;
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color .15s, transform .12s;
+  }
+  .tile:hover { border-color: var(--ink-mid); }
+  .tile:active { transform: translateY(1px); }
+  .tile:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .tile.is-sel { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+  .tile .t,
+  .tile .s {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 12.5px;
+    line-height: 1.4;
+    letter-spacing: .01em;
+    color: var(--ink);
+  }
+  .tile .n {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- article list view ---------- */
+  .list { margin-top: 24px; }
+  .back {
+    font-family: var(--body);
+    font-size: 12px;
+    border: 0;
+    background: transparent;
+    color: var(--ink-mid);
+    padding: 0;
+    cursor: pointer;
+  }
+  .back:hover { color: var(--ink); }
+  .back:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .list-hd { margin: 12px 0 18px; }
+  .list-hd .crumb {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .06em;
+    color: var(--ink-soft);
+  }
+  .list-hd h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 22px;
+    margin: 2px 0 0;
+    letter-spacing: .01em;
+  }
+
+  .adder {
+    background: var(--group);
+    border-radius: 10px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto;
+    gap: 8px;
+    align-items: center;
+  }
+  .adder input {
+    font-family: var(--body);
+    font-size: 13px;
+    padding: 9px 11px;
+    border: 1px solid var(--tile-line);
+    border-radius: 8px;
+    background: var(--tile);
+    color: var(--ink);
+    min-width: 0;
+  }
+  .adder input::placeholder { color: var(--ink-soft); }
+  .adder input:focus-visible { outline: 2px solid var(--ink); outline-offset: -1px; border-color: var(--ink); }
+  .adder button {
+    font-family: var(--body);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 18px;
+    border: 1px solid var(--ink);
+    border-radius: 8px;
+    background: var(--ink);
+    color: #FFFFFF;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .adder button:hover { opacity: .88; }
+  .adder button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .msg { font-size: 11.5px; color: var(--ink-mid); margin-top: 8px; min-height: 1.7em; }
+
+  .articles { margin-top: 16px; display: grid; gap: 8px; }
+  .article {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    background: var(--tile);
+    border: 1px solid var(--tile-line);
+    border-radius: 10px;
+    box-shadow: var(--tile-shadow);
+    padding: 13px 14px;
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color .15s;
+  }
+  .article:hover { border-color: var(--ink-mid); }
+  .article:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .article .at {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 13.5px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .article .au {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    overflow-wrap: anywhere;
+  }
+  .article .go { font-size: 12px; color: var(--ink-soft); }
+  .row { display: flex; align-items: center; gap: 6px; }
+  .del {
+    font-family: var(--body);
+    font-size: 11px;
+    border: 1px solid var(--tile-line);
+    background: var(--tile);
+    color: var(--ink-soft);
+    border-radius: 6px;
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+  .del:hover { border-color: var(--ink-mid); color: var(--ink); }
+  .empty {
+    border: 1px dashed rgba(147, 147, 147, .45);
+    border-radius: 10px;
+    padding: 22px 16px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .foot {
+    margin-top: 22px;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+  .foot kbd {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    border: 1px solid var(--line);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 0 4px;
+    margin: 0 1px;
+    color: var(--ink-mid);
+    background: var(--group);
+  }
+
+  @media (max-width: 560px) {
+    .adder { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 480px) {
+    .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hd">
+    <h1>スキルマップ三領域</h1>
+  </header>
+
+  <section class="board" id="board"></section>
+
+  <section class="list" id="list" hidden>
+    <button class="back" id="back" type="button">← スキルマップに戻る</button>
+    <div class="list-hd">
+      <div class="crumb" id="crumb"></div>
+      <h2 id="list-title"></h2>
+    </div>
+
+    <form class="adder" id="adder">
+      <input id="url-input" type="url" placeholder="https://example.com/article" required>
+      <input id="title-input" type="text" placeholder="タイトル（省略可）">
+      <button type="submit">リンクを追加</button>
+    </form>
+    <div class="msg" id="msg"></div>
+
+    <div class="articles" id="articles"></div>
+  </section>
+
+  <div class="foot" id="foot">
+    タイルをクリック、または <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> で選択。<kbd>Enter</kbd> で記事一覧を開きます。
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var ROOT = {
+    id: "pd",
+    name: "デジタルプロダクトデザイン",
+    desc: "データ分析・リサーチ・KPI・継続率改善を含む",
+    sub: {
+      id: "ux",
+      name: "UXデザイン",
+      desc: "ユーザー体験の設計・Why / What / How",
+      sub: {
+        id: "ui",
+        name: "UIデザイン",
+        desc: "視覚・操作インターフェースの設計：How ── 本拠地",
+        items: [
+          // keeps the "hig" id so links already added under it stay attached
+          { id: "hig", t: "HIG/MDG", s: "OS" },
+          { id: "da", t: "デジタル庁" },
+          { id: "trend", t: "トレンド" },
+          { id: "nav", t: "ナビゲーション", s: "モデリング" },
+          { id: "ds", t: "デザインシステム" }
+        ]
+      },
+      items: [
+        { id: "modeling", t: "ユーザー", s: "モデリング" },
+        { id: "explore", t: "探索的", s: "検証" },
+        { id: "hypo", t: "仮説検証", s: "調査" },
+        { id: "domain", t: "ドメイン", s: "知識" },
+        { id: "post", t: "リリース後", s: "検証" },
+        { id: "deep", t: "体験の", s: "深掘り" }
+      ]
+    },
+    items: [
+      { id: "quant", t: "定量調査", s: "施策紐付" },
+      { id: "translate", t: "ユーザー行動の", s: "定量的な翻訳" },
+      { id: "biz", t: "事業成果", s: "仮説検証型" },
+      { id: "impact", t: "インパクト試算" }
+    ]
+  };
+
+  var ITEMS = {};
+  (function collect(g) {
+    g.items.forEach(function (it) {
+      it.area = g.name;
+      it.label = it.t + (it.s || "");
+      ITEMS[it.id] = it;
+    });
+    if (g.sub) collect(g.sub);
+  })(ROOT);
+
+  var selected = ROOT.sub.sub.items[0].id;
+  var openSkill = null;
+
+  var board = document.getElementById("board");
+  var listView = document.getElementById("list");
+  var articlesEl = document.getElementById("articles");
+  var msgEl = document.getElementById("msg");
+  var foot = document.getElementById("foot");
+
+  /* ---------- store: shared db when available, this browser otherwise ---------- */
+  var db = null;
+  var unsubscribe = null;
+  var LOCAL_KEY = "skillmap.links.v1";
+
+  function localAll() {
+    try {
+      var raw = window.localStorage.getItem(LOCAL_KEY);
+      var parsed = raw ? JSON.parse(raw) : null;
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (e) { return {}; }
+  }
+  function localSave(all) {
+    try { window.localStorage.setItem(LOCAL_KEY, JSON.stringify(all)); } catch (e) { /* ignore */ }
+  }
+  function localList(skill) {
+    return (localAll()[skill] || []).slice().sort(function (a, b) { return b.createdAt - a.createdAt; });
+  }
+
+  function links(skill) { return db.collection("links").where("skill", "==", skill); }
+
+  /* ---------- board ---------- */
+  function tileGrid(items) {
+    var grid = document.createElement("div");
+    grid.className = "tiles";
+    items.forEach(function (it) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "tile";
+      b.id = "tile-" + it.id;
+      b.dataset.id = it.id;
+      b.innerHTML = '<span class="n" id="count-' + it.id + '"></span>' +
+        '<span class="t">' + it.t + "</span>" +
+        (it.s ? '<span class="s">' + it.s + "</span>" : "");
+      b.addEventListener("click", function () {
+        selected = it.id;
+        markSelection();
+        openList(it.id);
+      });
+      grid.appendChild(b);
+    });
+    return grid;
+  }
+
+  function heading(name, desc, cls) {
+    var hd = document.createElement("div");
+    hd.className = cls;
+    hd.innerHTML = "<h2>" + name + "</h2>" + '<div class="desc">' + desc + "</div>";
+    return hd;
+  }
+
+  // Each level renders its nested block first, then its own heading and tiles,
+  // so the innermost area (UI) sits at the top of the stack it belongs to.
+  function renderGroup(g, depth) {
+    var box = document.createElement(depth === 0 ? "section" : "div");
+    box.className = depth === 0 ? "group" : "subgroup";
+
+    var own = box;
+    if (g.sub) {
+      box.appendChild(renderGroup(g.sub, depth + 1));
+      // a level that wraps another one keeps its own heading and tiles in a padded block
+      own = document.createElement("div");
+      own.className = "content";
+      box.appendChild(own);
+    }
+    own.appendChild(heading(g.name, g.desc, depth === 0 ? "group-hd" : "sub-hd"));
+    own.appendChild(tileGrid(g.items));
+    return box;
+  }
+
+  board.appendChild(renderGroup(ROOT, 0));
+
+  function markSelection() {
+    Array.prototype.forEach.call(document.querySelectorAll(".tile"), function (t) {
+      var on = t.dataset.id === selected;
+      t.classList.toggle("is-sel", on);
+      t.tabIndex = on ? 0 : -1;
+      t.setAttribute("aria-current", on ? "true" : "false");
+    });
+  }
+
+  function setCount(skill, n) {
+    var el = document.getElementById("count-" + skill);
+    if (el) el.textContent = n > 0 ? n : "";
+  }
+
+  /* ---------- article list ---------- */
+  function hostOf(url) {
+    try { return new URL(url).hostname.replace(/^www\./, ""); } catch (e) { return url; }
+  }
+
+  function renderArticles(rows) {
+    articlesEl.textContent = "";
+    setCount(openSkill, rows.length);
+
+    if (!rows.length) {
+      var empty = document.createElement("div");
+      empty.className = "empty";
+      empty.textContent = "まだ記事がありません。上のフォームにURLを入れると、1件の記事として並びます。";
+      articlesEl.appendChild(empty);
+      return;
+    }
+
+    rows.forEach(function (r) {
+      var a = document.createElement("a");
+      a.className = "article";
+      a.href = r.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+
+      var left = document.createElement("div");
+      var t = document.createElement("div");
+      t.className = "at";
+      t.textContent = r.title || hostOf(r.url);
+      var u = document.createElement("div");
+      u.className = "au";
+      u.textContent = r.url;
+      left.appendChild(t);
+      left.appendChild(u);
+
+      var right = document.createElement("div");
+      right.className = "row";
+      var go = document.createElement("span");
+      go.className = "go";
+      go.textContent = "開く ↗";
+      var del = document.createElement("button");
+      del.type = "button";
+      del.className = "del";
+      del.textContent = "削除";
+      del.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        removeLink(r.id);
+      });
+      right.appendChild(go);
+      right.appendChild(del);
+
+      a.appendChild(left);
+      a.appendChild(right);
+      articlesEl.appendChild(a);
+    });
+  }
+
+  function loadArticles() {
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    var skill = openSkill;
+
+    if (db) {
+      unsubscribe = links(skill).onSnapshot(function (snap) {
+        var rows = snap.docs.map(function (d) {
+          var v = d.data() || {};
+          return { id: d.id, url: v.url, title: v.title, createdAt: v.createdAt || 0 };
+        }).sort(function (a, b) { return b.createdAt - a.createdAt; });
+        renderArticles(rows);
+      }, function () {
+        renderArticles(localList(skill));
+        msgEl.textContent = "共有の保存先に接続できないため、このブラウザにのみ保存します。";
+      });
+      return;
+    }
+    renderArticles(localList(skill));
+  }
+
+  function addLink(url, title) {
+    var row = { skill: openSkill, url: url, title: title, createdAt: Date.now() };
+    if (db) {
+      return db.collection("links").add(row).then(function () {
+        msgEl.textContent = "追加しました。";
+      }, function (e) {
+        msgEl.textContent = e && e.code === "invalid_argument"
+          ? "このページの編集権限がないため、追加できませんでした。"
+          : "追加できませんでした。少し待ってからもう一度お試しください。";
+      });
+    }
+    var all = localAll();
+    var arr = all[openSkill] || (all[openSkill] = []);
+    arr.push({ id: String(Date.now()) + Math.random().toString(36).slice(2, 7), url: url, title: title, createdAt: row.createdAt });
+    localSave(all);
+    renderArticles(localList(openSkill));
+    msgEl.textContent = "追加しました。";
+    return Promise.resolve();
+  }
+
+  function removeLink(id) {
+    if (db) {
+      db.collection("links").doc(id).delete().then(null, function () {
+        msgEl.textContent = "削除できませんでした。";
+      });
+      return;
+    }
+    var all = localAll();
+    all[openSkill] = (all[openSkill] || []).filter(function (r) { return r.id !== id; });
+    localSave(all);
+    renderArticles(localList(openSkill));
+  }
+
+  function openList(skill) {
+    openSkill = skill;
+    var it = ITEMS[skill];
+    document.getElementById("crumb").textContent = it.area;
+    document.getElementById("list-title").textContent = it.label;
+    msgEl.textContent = "";
+    document.getElementById("adder").reset();
+
+    board.hidden = true;
+    listView.hidden = false;
+    foot.innerHTML = "記事をクリックするとリンクが新しいタブで開きます。<kbd>Esc</kbd> でスキルマップに戻ります。";
+    loadArticles();
+    document.getElementById("url-input").focus();
+  }
+
+  function closeList() {
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    openSkill = null;
+    listView.hidden = true;
+    board.hidden = false;
+    foot.innerHTML = "タイルをクリック、または <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> で選択。<kbd>Enter</kbd> で記事一覧を開きます。";
+    focusTile(document.getElementById("tile-" + selected));
+  }
+
+  document.getElementById("back").addEventListener("click", closeList);
+
+  document.getElementById("adder").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var urlEl = document.getElementById("url-input");
+    var titleEl = document.getElementById("title-input");
+    var url = urlEl.value.trim();
+    if (!url) return;
+    if (!/^https?:\/\//i.test(url)) {
+      msgEl.textContent = "URLは http:// または https:// から入力してください。";
+      return;
+    }
+    addLink(url, titleEl.value.trim());
+    urlEl.value = "";
+    titleEl.value = "";
+    urlEl.focus();
+  });
+
+  /* ---------- keyboard ---------- */
+  function focusTile(el) {
+    if (!el) return;
+    try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+    if (el.scrollIntoView) el.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+
+  function moveSelection(dir) {
+    var cur = document.getElementById("tile-" + selected);
+    if (!cur) return;
+    var r = cur.getBoundingClientRect();
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    var best = null, bestScore = Infinity;
+
+    Array.prototype.forEach.call(document.querySelectorAll(".tile"), function (t) {
+      if (t === cur) return;
+      var b = t.getBoundingClientRect();
+      var dx = (b.left + b.width / 2) - cx;
+      var dy = (b.top + b.height / 2) - cy;
+      var main, cross;
+      if (dir === "left")       { if (dx > -4) return; main = -dx; cross = Math.abs(dy); }
+      else if (dir === "right") { if (dx <  4) return; main =  dx; cross = Math.abs(dy); }
+      else if (dir === "up")    { if (dy > -4) return; main = -dy; cross = Math.abs(dx); }
+      else                      { if (dy <  4) return; main =  dy; cross = Math.abs(dx); }
+      var score = main + cross * 2.2;
+      if (score < bestScore) { bestScore = score; best = t; }
+    });
+
+    if (!best) return;
+    selected = best.dataset.id;
+    markSelection();
+    focusTile(best);
+  }
+
+  function grabKeyboard() {
+    if (openSkill) return;
+    var a = document.activeElement;
+    if (a && a.classList && a.classList.contains("tile")) return;
+    if (a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA" || a.tagName === "SELECT")) return;
+    focusTile(document.getElementById("tile-" + selected));
+  }
+
+  // The page often runs in a side pane that does not hold keyboard focus yet:
+  // take it as soon as the pointer is over the board, or on any click in the page.
+  board.addEventListener("mouseenter", grabKeyboard, true);
+  document.addEventListener("pointerdown", function (e) {
+    if (e.target.closest("a, input, button")) return;
+    grabKeyboard();
+  });
+
+  var DIRS = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down" };
+
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    var a = document.activeElement;
+    var typing = a && (a.tagName === "INPUT" || a.tagName === "TEXTAREA" || a.tagName === "SELECT" || a.isContentEditable);
+
+    if (e.key === "Escape" && openSkill) {
+      if (typing) a.blur();
+      closeList();
+      return;
+    }
+    if (typing || openSkill) return;
+
+    var dir = DIRS[e.key];
+    if (!dir) return;
+    e.preventDefault();
+
+    var inTile = a && a.classList && a.classList.contains("tile");
+    if (!inTile) focusTile(document.getElementById("tile-" + selected));
+    moveSelection(dir);
+  });
+
+  markSelection();
+
+  /* ---------- counts on the board, and the shared store when it arrives ---------- */
+  function refreshCounts() {
+    if (db) {
+      db.collection("links").get().then(function (snap) {
+        var bySkill = {};
+        snap.docs.forEach(function (d) {
+          var v = d.data() || {};
+          if (v.skill) bySkill[v.skill] = (bySkill[v.skill] || 0) + 1;
+        });
+        Object.keys(ITEMS).forEach(function (id) { setCount(id, bySkill[id] || 0); });
+      }, function () { /* leave the counts as they are */ });
+      return;
+    }
+    var all = localAll();
+    Object.keys(ITEMS).forEach(function (id) { setCount(id, (all[id] || []).length); });
+  }
+
+  refreshCounts();
+
+  if (window.claude && typeof window.claude.use === "function") {
+    window.claude.use("db").then(function (ns) {
+      if (!ns) return;
+      db = ns;
+      refreshCounts();
+      if (openSkill) loadArticles();
+    }, function () { /* keep the local store */ });
+  }
+})();
+</script>
+</body>
+</html>
