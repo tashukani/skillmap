@@ -310,7 +310,7 @@
   <section class="board" id="board"></section>
 
   <section class="list" id="list" hidden>
-    <button class="back" id="back" type="button">← スキルマップに戻る</button>
+    <button class="back" id="back" type="button">← 一覧に戻る</button>
     <div class="list-hd">
       <div class="crumb" id="crumb"></div>
       <h2 id="list-title"></h2>
@@ -603,7 +603,7 @@
     document.getElementById("list-title").textContent = it.label;
     board.hidden = true;
     listView.hidden = false;
-    foot.innerHTML = "記事をクリックするとリンクが新しいタブで開きます。<kbd>Esc</kbd> でスキルマップに戻ります。";
+    foot.innerHTML = "記事をクリックするとリンクが新しいタブで開きます。<kbd>Esc</kbd> で一覧に戻ります。";
     renderArticles(linksFor(skill));
     document.getElementById("back").focus();
   }
