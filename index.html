@@ -321,9 +321,9 @@
         desc: "視覚・操作インターフェースの設計：How",
         items: [
           // keeps the "hig" id so links already added under it stay attached
-          { id: "hig", t: "HIG/MDG", s: "OS" },
+          { id: "hig", t: "インタラクション" },
           { id: "da", t: "デジタル庁・WCAG" },
-          { id: "trend", t: "トレンド" },
+          { id: "trend", t: "スタイルトレンド" },
           { id: "nav", t: "ナビゲーション", s: "レイアウト" },
           { id: "ds", t: "デザインシステム" }
         ]
@@ -386,16 +386,6 @@
       links: {
     hig: [
       {
-        url: "https://m3.material.io/foundations/layout/layout-overview/overview",
-        title: "順応型レイアウト（Android）",
-        desc: "折りたたみ端末、タブレット、車載用UIなど、各種画面サイズや端末の変形に動的に応じる「Adaptive/Dynamic Layout」のコンポーネント設計が標準化。"
-      },
-      {
-        url: "https://developer.apple.com/design/human-interface-guidelines/layout#Size-classes",
-        title: "レイアウト（iOS）",
-        desc: "・推奨：システムレベルで発生するダイナミックタイプへの対応\n・推奨：幅広い端末への対応（サイズクラスの使用）"
-      },
-      {
         url: "https://developer.android.com/design/ui/mobile/guides/patterns/predictive-back?utm_source=gemini&hl=ja",
         title: "予測バックジェスチャー",
         desc: "Predictive Back（予測バックジェスチャー）の完全定着"
@@ -415,7 +405,18 @@
         desc: "・非推奨：コントロールに色を使うこと\n・推奨：カスタムフォントの使用"
       }
     ],
-    nav: [],
+    nav: [
+      {
+        url: "https://m3.material.io/foundations/layout/layout-overview/overview",
+        title: "順応型レイアウト（Android）",
+        desc: "折りたたみ端末、タブレット、車載用UIなど、各種画面サイズや端末の変形に動的に応じる「Adaptive/Dynamic Layout」のコンポーネント設計が標準化。"
+      },
+      {
+        url: "https://developer.apple.com/design/human-interface-guidelines/layout#Size-classes",
+        title: "レイアウト（iOS）",
+        desc: "・推奨：システムレベルで発生するダイナミックタイプへの対応\n・推奨：幅広い端末への対応（サイズクラスの使用）"
+      }
+    ],
     ds: [
       {
         url: "https://qiita.com/Takenoko4594/items/4387782ff8310427048e",
