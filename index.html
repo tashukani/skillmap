@@ -395,6 +395,8 @@
      appears in the tab strip but cannot be opened yet.
      Inside `links`, put a new article at the TOP of its skill's array:
        hig: [{ url: "https://example.com/a", title: "記事タイトル", desc: "説明（改行可）" }]
+     `url` を省くとリンクではないメモカードになり、`todo: true` を付けた項目は
+     件数に数えず、タイルの文字も薄いままになります。
      Skill keys — UI: hig, da, trend, nav, ds /
      UX: modeling, explore, hypo, domain, deep /
      デジタルプロダクトデザイン: quant, translate, biz, impact */
@@ -497,6 +499,7 @@
     ],
     translate: [
       {
+        todo: true,
         title: "未着手",
         desc: "ユーザー行動の数値的定義：「記事を読む＝スクロール率75%以上＋滞在時間2分以上」のように、行動をログデータに翻訳します。\n\nThe Aha Moment（コアバリュー体験）の特定：初回利用時などにユーザーが価値を感じる一連の連続行動を条件化して計測します。"
       }
@@ -504,6 +507,7 @@
     biz: [],
     impact: [
       {
+        todo: true,
         title: "未着手",
         desc: "ビジネスインパクト ＝ 対象ユーザー規模 × 売上寄与度 × 見込まれる改善率"
       }
@@ -747,7 +751,8 @@
   /* ---------- issue tabs ---------- */
   function refreshCounts() {
     Object.keys(ITEMS).forEach(function (id) {
-      setCount(id, linksFor(id).length);
+      var done = linksFor(id).filter(function (r) { return !r.todo; });
+      setCount(id, done.length);
     });
   }
 
