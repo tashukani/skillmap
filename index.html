@@ -194,7 +194,7 @@
   .article {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
+    align-items: start;
     gap: 12px;
     background: var(--tile);
     border: 1px solid var(--tile-line);
@@ -213,6 +213,12 @@
     font-size: 13.5px;
     line-height: 1.5;
     overflow-wrap: anywhere;
+  }
+  .article .ad {
+    font-size: 12px;
+    color: var(--ink-mid);
+    line-height: 1.65;
+    margin: 2px 0 4px;
   }
   .article .au {
     font-family: var(--mono);
@@ -352,7 +358,13 @@
     da: [],
     trend: [],
     nav: [],
-    ds: [],
+    ds: [
+      {
+        url: "https://qiita.com/Takenoko4594/items/4387782ff8310427048e",
+        title: "Generative UI",
+        desc: "デザインシステムにも「AI生成UI用のガイドラインやトークン定義」を取り入れる動きが加速しています。"
+      }
+    ],
     modeling: [],
     explore: [],
     hypo: [],
@@ -457,10 +469,18 @@
       var t = document.createElement("div");
       t.className = "at";
       t.textContent = r.title || hostOf(r.url);
+      left.appendChild(t);
+
+      if (r.desc) {
+        var d = document.createElement("div");
+        d.className = "ad";
+        d.textContent = r.desc;
+        left.appendChild(d);
+      }
+
       var u = document.createElement("div");
       u.className = "au";
       u.textContent = r.url;
-      left.appendChild(t);
       left.appendChild(u);
 
       var go = document.createElement("span");
