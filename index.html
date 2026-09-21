@@ -215,6 +215,7 @@
     overflow-wrap: anywhere;
   }
   .article .ad {
+    white-space: pre-line;
     font-size: 12px;
     color: var(--ink-mid);
     line-height: 1.65;
@@ -354,7 +355,18 @@
      UX: modeling, explore, hypo, domain, post, deep /
      デジタルプロダクトデザイン: quant, translate, biz, impact */
   var LINKS = {
-    hig: [],
+    hig: [
+      {
+        url: "https://developer.apple.com/design/human-interface-guidelines/branding#Best-practices",
+        title: "ブランド表現（iOS）",
+        desc: "・非推奨：コントロールに色を使うこと\n・推奨：カスタムフォントの使用"
+      },
+      {
+        url: "https://developer.apple.com/design/human-interface-guidelines/layout#Size-classes",
+        title: "レイアウト（iOS）",
+        desc: "・推奨：システムレベルで発生するダイナミックタイプへの対応\n・推奨：幅広い端末への対応（サイズクラスの使用）"
+      }
+    ],
     da: [],
     trend: [],
     nav: [],
