@@ -59,13 +59,28 @@
     gap: 10px;
     flex-wrap: wrap;
   }
-  .hd h1 .issue {
+  .issues { display: flex; gap: 4px; flex-wrap: wrap; }
+  .issues button {
     font-family: var(--mono);
-    font-weight: 500;
     font-size: 12px;
-    letter-spacing: .06em;
+    letter-spacing: .04em;
+    padding: 4px 10px;
+    border: 1px solid transparent;
+    border-radius: 99px;
+    background: transparent;
     color: var(--ink-soft);
+    cursor: pointer;
   }
+  .issues button:hover:not(:disabled):not([aria-current="true"]) {
+    color: var(--ink);
+    border-color: var(--tile-line);
+  }
+  .issues button[aria-current="true"] {
+    background: var(--group);
+    color: var(--ink);
+  }
+  .issues button:disabled { opacity: .45; cursor: default; }
+  .issues button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
   .hd .sub {
     margin: 0 0 0 auto;
     font-size: 12px;
@@ -266,7 +281,8 @@
 <div class="wrap">
 
   <header class="hd">
-    <h1>デザイン<span class="issue">2026年9月</span></h1>
+    <h1>デザイン</h1>
+    <nav class="issues" id="issues" aria-label="号を選ぶ"></nav>
     <p class="sub">Claudeから更新</p>
   </header>
 
@@ -347,14 +363,27 @@
   var articlesEl = document.getElementById("articles");
   var foot = document.getElementById("foot");
 
-  /* ---------- links ----------
-     The article lists live in this file. To add one, put it at the TOP of its
-     skill's array (newest first) and commit:
-       hig: [{ url: "https://example.com/a", title: "記事タイトル" }]
+  /* ---------- issues ----------
+     Newest first: a new 号 goes at the TOP of this array and becomes the one
+     shown on load as soon as its `enabled` is true. A 号 with enabled: false
+     appears in the tab strip but cannot be opened yet.
+     Inside `links`, put a new article at the TOP of its skill's array:
+       hig: [{ url: "https://example.com/a", title: "記事タイトル", desc: "説明（改行可）" }]
      Skill keys — UI: hig, da, trend, nav, ds /
      UX: modeling, explore, hypo, domain, post, deep /
      デジタルプロダクトデザイン: quant, translate, biz, impact */
-  var LINKS = {
+  var ISSUES = [
+    {
+      id: "2026-10",
+      label: "2026年10月",
+      enabled: false,
+      links: {}
+    },
+    {
+      id: "2026-09",
+      label: "2026年9月",
+      enabled: true,
+      links: {
     hig: [
       {
         url: "https://developer.apple.com/design/human-interface-guidelines/branding#Best-practices",
@@ -387,7 +416,15 @@
     translate: [],
     biz: [],
     impact: []
-  };
+  }
+    }
+  ];
+
+  var issue = ISSUES.filter(function (x) { return x.enabled; })[0] || ISSUES[0];
+
+  function linksFor(skill) {
+    return (issue.links && issue.links[skill]) || [];
+  }
 
   /* ---------- board ---------- */
   function tileGrid(items) {
@@ -513,7 +550,7 @@
     board.hidden = true;
     listView.hidden = false;
     foot.innerHTML = "記事をクリックするとリンクが新しいタブで開きます。<kbd>Esc</kbd> でスキルマップに戻ります。";
-    renderArticles(LINKS[skill] || []);
+    renderArticles(linksFor(skill));
     document.getElementById("back").focus();
   }
 
@@ -602,9 +639,34 @@
 
   markSelection();
 
-  Object.keys(ITEMS).forEach(function (id) {
-    setCount(id, (LINKS[id] || []).length);
+  /* ---------- issue tabs ---------- */
+  function refreshCounts() {
+    Object.keys(ITEMS).forEach(function (id) {
+      setCount(id, linksFor(id).length);
+    });
+  }
+
+  var issuesEl = document.getElementById("issues");
+  ISSUES.forEach(function (x) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.textContent = x.label;
+    b.disabled = !x.enabled;
+    b.setAttribute("aria-current", String(x === issue));
+    if (!x.enabled) b.title = "準備中";
+    b.addEventListener("click", function () {
+      if (x === issue) return;
+      issue = x;
+      if (openSkill) closeList();
+      Array.prototype.forEach.call(issuesEl.children, function (el) {
+        el.setAttribute("aria-current", String(el === b));
+      });
+      refreshCounts();
+    });
+    issuesEl.appendChild(b);
   });
+
+  refreshCounts();
 
 })();
 </script>
