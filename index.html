@@ -238,6 +238,9 @@
     transition: border-color .15s;
   }
   .article:hover { border-color: var(--ink-mid); }
+  /* a note with no link is not clickable */
+  .article.no-link { box-shadow: none; background: var(--group); }
+  .article.no-link:hover { border-color: var(--tile-line); }
   .article:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
   .article .at {
     font-family: var(--display);
@@ -459,12 +462,36 @@
         desc: "デザインシステムにも「AI生成UI用のガイドラインやトークン定義」を取り入れる動きが加速しています。"
       }
     ],
-    modeling: [],
-    explore: [],
-    hypo: [],
+    modeling: [
+      {
+        title: "暫定ペルソナの社内共有",
+        desc: "リニューアルが誰のために行われたのか？\nどんな人が、どのように反応すれば成功と言えるのかUXの切り口で定義する。"
+      }
+    ],
+    explore: [
+      {
+        title: "アンケートの実施",
+        desc: "一部ユーザーへの公開・α版リリースに対する意見を広く回収する予定。\n優先度を明確にして、チームで対応する必要がある。"
+      }
+    ],
+    hypo: [
+      {
+        title: "インタビュー計画",
+        desc: "設計の元になった仮説をまとめ、リリース後の検証計画を立てる。"
+      }
+    ],
     domain: [],
     deep: [],
-    quant: [],
+    quant: [
+      {
+        title: "定量監視",
+        desc: "既存・新規の指標を洗い出し、監視する仕組みを準備する。"
+      },
+      {
+        title: "過去の施策と定量指標の紐付",
+        desc: "過去実施した施策と定量指標を一覧化する。"
+      }
+    ],
     translate: [],
     biz: [],
     impact: []
@@ -560,11 +587,17 @@
     }
 
     rows.forEach(function (r) {
-      var a = document.createElement("a");
-      a.className = "article";
-      a.href = r.url;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
+      var a;
+      if (r.url) {
+        a = document.createElement("a");
+        a.href = r.url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+      } else {
+        a = document.createElement("div");
+        a.className = "no-link";
+      }
+      a.className = "article" + (r.url ? "" : " no-link");
 
       var left = document.createElement("div");
       var t = document.createElement("div");
@@ -579,17 +612,22 @@
         left.appendChild(d);
       }
 
-      var u = document.createElement("div");
-      u.className = "au";
-      u.textContent = r.url;
-      left.appendChild(u);
-
-      var go = document.createElement("span");
-      go.className = "go";
-      go.textContent = "開く ↗";
+      if (r.url) {
+        var u = document.createElement("div");
+        u.className = "au";
+        u.textContent = r.url;
+        left.appendChild(u);
+      }
 
       a.appendChild(left);
-      a.appendChild(go);
+
+      if (r.url) {
+        var go = document.createElement("span");
+        go.className = "go";
+        go.textContent = "開く ↗";
+        a.appendChild(go);
+      }
+
       articlesEl.appendChild(a);
     });
   }
