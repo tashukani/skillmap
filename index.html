@@ -184,6 +184,9 @@
     letter-spacing: .01em;
     color: var(--ink);
   }
+  /* a tile with nothing in it yet reads back */
+  .tile.is-empty .t,
+  .tile.is-empty .s { opacity: .3; }
   .tile .n {
     position: absolute;
     top: 6px;
@@ -578,6 +581,8 @@
   function setCount(skill, n) {
     var el = document.getElementById("count-" + skill);
     if (el) el.textContent = n > 0 ? n : "";
+    var tile = document.getElementById("tile-" + skill);
+    if (tile) tile.classList.toggle("is-empty", n === 0);
   }
 
   /* ---------- article list ---------- */
